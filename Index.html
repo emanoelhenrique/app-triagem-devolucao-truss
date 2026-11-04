@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    :root {
+      --primary: #2d3142; /* Topo Escuro Elegante */
+      --secondary: #00796b; 
+      --btn-blue: #3a86ff;
+      --btn-orange: #fb5607;
+      --bg: #f4f5f7; /* Fundo claro e limpo igual ao exemplo */
+      --card-bg: #ffffff;
+      --text: #333333;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0; padding: 0;
+      display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+    }
+
+    /* TOPO ESCURO ESTILO BOTICÁRIO */
+    .top-navbar {
+      width: 100%; background-color: var(--primary); color: white;
+      padding: 15px 30px; display: flex; justify-content: space-between; align-items: center;
+      box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    .top-navbar h2 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: 1px; }
+
+    .container {
+      width: 95%; max-width: 1000px; margin: 30px auto;
+      background: var(--card-bg); border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.05); padding: 40px; box-sizing: border-box;
+      flex-grow: 1;
+    }
+
+    /* MENU DE ABAS ESTILO BOTÕES (Ref: Imagem da Amiga) */
+    .tabs { display: flex; justify-content: center; gap: 20px; margin-bottom: 40px; }
+    .tab-btn {
+      padding: 14px 30px; text-align: center; font-size: 14px; font-weight: bold;
+      color: white; cursor: pointer; border: none; border-radius: 8px;
+      transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .tab-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+    .btn-triagem { background-color: var(--btn-blue); }
+    .btn-pendencias { background-color: var(--btn-orange); opacity: 0.7; }
+    .btn-triagem.active { opacity: 1; outline: 3px solid #bbd0ff; }
+    .btn-pendencias.active { opacity: 1; outline: 3px solid #ffddd2; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.4s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .row { display: flex; gap: 40px; margin-bottom: 25px; flex-wrap: wrap; }
+    .col { flex: 1; min-width: 250px; }
+
+    label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; color: #666; text-transform: uppercase;}
+
+    input, select {
+      width: 100%; padding: 14px; border: 1px solid #dcdde1;
+      border-radius: 6px; font-size: 15px; transition: 0.3s; background-color: #fcfcfc; box-sizing: border-box;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--btn-blue); background-color: #fff; box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.15); }
+
+    input[type=number].no-spin::-webkit-inner-spin-button, 
+    input[type=number].no-spin::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number].no-spin { -moz-appearance: textfield; }
+
+    /* PAINEL DE INFORMAÇÕES AUMENTADO E DESTACADO */
+    .info-panel {
+      background-color: #f8f0fc; border: 1px solid #e0c3f5; border-left: 8px solid #9d4edd;
+      padding: 30px; border-radius: 10px; margin: 30px 0; display: none; box-shadow: 0 4px 15px rgba(157, 78, 221, 0.08);
+    }
+    .info-panel h3 { margin-top: 0; color: #5a189a; font-size: 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 14px; line-height: 1.5;}
+    .info-item span { font-weight: bold; color: #333; }
+    
+    .not-found-panel {
+      background-color: #ffebeb; border-left: 8px solid #ef233c; padding: 25px; 
+      border-radius: 8px; margin: 30px 0; display: none; color: #d90429; font-weight: bold; font-size: 16px;
+    }
+
+    .status-badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-top: 5px; }
+    .alert-sobra { background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 6px; margin-top: 25px; font-weight: bold; display: none; text-align: center; border: 1px dashed #ef9a9a;}
+    .alert-dedutivel { background-color: #e3f2fd; color: #1565c0; padding: 12px; border-radius: 6px; margin-top: 15px; font-weight: bold; display: none; font-size: 13px;}
+
+    .btn-salvar {
+      background-color: var(--secondary); color: white; border: none; padding: 18px; width: 100%;
+      font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; margin-top: 20px;
+    }
+    .btn-salvar:hover { background-color: #004d40; box-shadow: 0 6px 15px rgba(0, 121, 107, 0.3); }
+
+    /* FILTROS E TABELA DE PENDÊNCIAS */
+    .filtros-container { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+    .filtros-container input { padding: 10px; font-size: 14px; border-radius: 4px; }
+    
+    .table-responsive { overflow-x: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #edf2f7;}
+    table { width: 100%; border-collapse: collapse; background: white; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #edf2f7; font-size: 14px; }
+    th { background-color: #f8f9fa; color: #4a5568; font-weight: 700; white-space: nowrap; font-size: 13px; text-transform: uppercase;}
+    tr:hover { background-color: #f8f9fa; }
+    .btn-logica { background-color: #e5383b; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; white-space: nowrap; font-size: 12px; }
+    .btn-logica:hover { background-color: #ba1826; }
+    .refresh-btn { background: var(--btn-blue); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;}
+
+    /* RODAPÉ DESENVOLVEDOR */
+    .footer { text-align: center; padding: 30px; font-size: 13px; color: #7f8c8d; width: 100%; }
+    .footer strong { color: #2c3e50; }
+  </style>
+</head>
+<body>
+
+  <div class="top-navbar">
+    <h2>📦 Devolução TRUSS - DPC REG</h2>
+    <div style="font-size: 14px;">REGISTRO DE CONFERÊNCIA</div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn btn-triagem active" onclick="mudarAba('abaTriagem', this)">ÁREA DE TRIAGEM</button>
+      <button class="tab-btn btn-pendencias" onclick="mudarAba('abaPendencias', this); carregarPendencias();">NOTAS PENDENTES</button>
+    </div>
+
+    <!-- ABA 1: TRIAGEM -->
+    <div id="abaTriagem" class="tab-content active">
+      <div class="row">
+        <div class="col">
+          <label>Nº DA NOTA</label>
+          <input type="number" id="nota" class="no-spin" onkeyup="checarDados()">
+        </div>
+        <div class="col">
+          <label>EAN DO PRODUTO</label>
+          <input type="number" id="ean" class="no-spin" onkeyup="checarDados()">
+        </div>
+      </div>
+
+      <!-- PAINEL ERRO NÃO ENCONTRADO -->
+      <div id="notFoundPanel" class="not-found-panel">
+        ⚠️ Material não encontrado na Devolução Yungas.
+      </div>
+
+      <!-- PAINEL SUCESSO -->
+      <div id="infoPanel" class="info-panel">
+        <h3>🔍 Informações da Devolução Yungas</h3>
+        <div class="info-grid">
+          <div class="info-item"><span>Chave:</span> <span id="lblChave" style="font-weight:normal;">-</span></div>
+          <div class="info-item"><span>Código (SAP):</span> <span id="lblCodigo" style="font-weight:normal;">-</span></div>
+          <div class="info-item"><span>Erro:</span> <span id="lblErro" style="font-weight:normal;">-</span></div>
+          <div class="info-item"><span>Motivo:</span> <span id="lblMotivo" style="font-weight:normal;">-</span></div>
+          <div class="info-item"><span>Marcador:</span> <span id="lblMarcador" style="font-weight:normal;">-</span></div>
+          <div class="info-item"><span>Status:</span> <div id="lblStatus" class="status-badge">-</div></div>
+        </div>
+        <div class="info-item" style="margin-top: 20px;"><span>OBS:</span> <span id="lblObs" style="font-weight:normal;">-</span></div>
+        <div id="alertaDedutivel" class="alert-dedutivel">ℹ️ Processo classificado automaticamente como 100% DEDUTÍVEL.</div>
+        <div id="alertaSobra" class="alert-sobra">⚠️ ATENÇÃO: Material já consta como "OK / Finalizado". Processo alterado para SOBRA FÍSICA.</div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>LOTE FÍSICO</label>
+          <input type="text" id="lote">
+        </div>
+        <div class="col">
+          <label>QUANTIDADE</label>
+          <input type="number" id="qtd" class="no-spin">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>POSIÇÃO DESTINO</label>
+          <input type="text" id="destino">
+        </div>
+        <div class="col">
+          <label>PROCESSO</label>
+          <select id="processo">
+            <option value="">Selecione...</option>
+            <option value="REINTEGRAÇÃO">REINTEGRAÇÃO</option>
+            <option value="DEDUTÍVEL">DEDUTÍVEL</option>
+            <option value="SOBRA FÍSICA">SOBRA FÍSICA</option>
+            <option value="SOBRA LÓGICA">SOBRA LÓGICA</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-salvar" onclick="salvar()" id="btnSalvar">SALVAR LANÇAMENTO</button>
+    </div>
+
+    <!-- ABA 2: PENDÊNCIAS -->
+    <div id="abaPendencias" class="tab-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <button class="refresh-btn" onclick="carregarPendencias()">🔄 Atualizar Base</button>
+        <span id="loadingMsg" style="display:none; font-weight:bold; color:var(--btn-blue); font-size:14px;">Buscando...</span>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="filtros-container">
+        <input type="text" id="filtroChave" onkeyup="filtrarTabela()" placeholder="🔍 Filtrar Chave..." style="flex:2;">
+        <input type="text" id="filtroNota" onkeyup="filtrarTabela()" placeholder="🔍 Filtrar Nota..." style="flex:1;">
+        <input type="text" id="filtroMaterial" onkeyup="filtrarTabela()" placeholder="🔍 Filtrar Material..." style="flex:1;">
+      </div>
+      
+      <div class="table-responsive">
+        <table id="tabelaDados">
+          <thead>
+            <tr>
+              <th>Chave</th>
+              <th>Nota</th>
+              <th>Material</th>
+              <th>Saldo Pendente</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaPendencias">
+            <tr><td colspan="5" style="text-align:center;">Clique em atualizar para carregar.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RODAPÉ -->
+  <div class="footer">
+    Foi desenvolvido por: <strong>Emanoel Antunes</strong>
+  </div>
+
+  <script>
+    let chaveOculta = "";
+    let codigoOculto = "";
+    let listaPendentes = []; 
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('nota').addEventListener('wheel', function(e) { e.preventDefault(); });
+      document.getElementById('ean').addEventListener('wheel', function(e) { e.preventDefault(); });
+      document.getElementById('qtd').addEventListener('wheel', function(e) { e.preventDefault(); });
+    });
+
+    function mudarAba(abaId, btn) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.opacity = "0.7"; b.style.outline = "none";
+      });
+      document.getElementById(abaId).classList.add('active');
+      btn.classList.add('active');
+      btn.style.opacity = "1";
+      btn.style.outline = btn.classList.contains('btn-triagem') ? "3px solid #bbd0ff" : "3px solid #ffddd2";
+    }
+
+    // --- LÓGICA DA TRIAGEM ---
+    function checarDados() {
+      const nota = document.getElementById('nota').value;
+      const ean = document.getElementById('ean').value;
+      
+      if(nota && ean) {
+        google.script.run.withSuccessHandler(preencherPainel).buscarDadosItem(nota, ean);
+      } else {
+        document.getElementById('infoPanel').style.display = "none";
+        document.getElementById('notFoundPanel').style.display = "none";
+        chaveOculta = ""; codigoOculto = "";
+      }
+    }
+
+    function preencherPainel(resultado) {
+      const panel = document.getElementById('infoPanel');
+      const notFoundPanel = document.getElementById('notFoundPanel');
+      const alertaSobra = document.getElementById('alertaSobra');
+      const alertaDedutivel = document.getElementById('alertaDedutivel');
+      const selectProcesso = document.getElementById('processo');
+
+      if(resultado.encontrado) {
+        panel.style.display = "block";
+        notFoundPanel.style.display = "none";
+        chaveOculta = resultado.chave;
+        codigoOculto = resultado.codigo;
+
+        document.getElementById('lblChave').innerText = resultado.chave; 
+        document.getElementById('lblCodigo').innerText = resultado.codigo;
+        document.getElementById('lblErro').innerText = resultado.erro;
+        document.getElementById('lblMotivo').innerText = resultado.motivo;
+        document.getElementById('lblObs').innerText = resultado.obs;
+
+        // Regra do Marcador e Dedutível
+        let marcadorOrig = resultado.marcador;
+        let isDedutivel = false;
+
+        if (marcadorOrig.includes("1. Aprovado - Qualidade")) {
+          document.getElementById('lblMarcador').innerHTML = "1. Aprovado - Qualidade / Defeito de Fábrica";
+          isDedutivel = true;
+        } else if (marcadorOrig.includes("1. Aprovado - Recolhimento")) {
+          document.getElementById('lblMarcador').innerHTML = "1. Aprovado - <span style='color:red; font-weight:900;'>Recolhimento</span>";
+          isDedutivel = true;
+        } else {
+          document.getElementById('lblMarcador').innerHTML = marcadorOrig;
+        }
+        
+        let lblStatus = document.getElementById('lblStatus');
+        lblStatus.innerText = resultado.status;
+
+        // Reseta alertas
+        alertaSobra.style.display = "none";
+        alertaDedutivel.style.display = "none";
+
+        if(resultado.status.includes("OK") || resultado.status.includes("Finalizado")) {
+          lblStatus.style.backgroundColor = "#c8e6c9"; lblStatus.style.color = "#2e7d32";
+          alertaSobra.style.display = "block"; 
+          selectProcesso.value = "SOBRA FÍSICA";
+        } else {
+          lblStatus.style.backgroundColor = "#fff3e0"; lblStatus.style.color = "#e65100";
+          if (isDedutivel) {
+            selectProcesso.value = "DEDUTÍVEL";
+            alertaDedutivel.style.display = "block";
+          } else if(selectProcesso.value === "SOBRA FÍSICA") {
+            selectProcesso.value = "";
+          }
+        }
+      } else {
+        panel.style.display = "none";
+        notFoundPanel.style.display = "block";
+        chaveOculta = ""; codigoOculto = "";
+      }
+    }
+
+    function salvar() {
+      const nota = document.getElementById('nota').value;
+      const ean = document.getElementById('ean').value;
+      const lote = document.getElementById('lote').value;
+      const qtd = document.getElementById('qtd').value;
+      const destino = document.getElementById('destino').value;
+      const processo = document.getElementById('processo').value;
+
+      if(!nota || !ean || !lote || !qtd || !processo || !chaveOculta) {
+        alert("Preencha todos os campos e confirme se a Nota e EAN foram encontrados!"); return;
+      }
+
+      document.getElementById('btnSalvar').innerText = "Salvando...";
+      document.getElementById('btnSalvar').disabled = true;
+
+      const formulario = {
+        nota: nota, ean: ean, lote: lote, qtd: qtd,
+        destino: destino, processo: processo,
+        chave: chaveOculta, codigo: codigoOculto
+      };
+
+      google.script.run.withSuccessHandler(sucessoAoSalvar).salvarLancamentoApp(formulario);
+    }
+
+    function sucessoAoSalvar(mensagem) {
+      alert(mensagem);
+      document.getElementById('ean').value = ""; document.getElementById('lote').value = "";
+      document.getElementById('qtd').value = ""; document.getElementById('processo').value = "";
+      document.getElementById('infoPanel').style.display = "none";
+      document.getElementById('notFoundPanel').style.display = "none";
+      document.getElementById('btnSalvar').innerText = "SALVAR LANÇAMENTO";
+      document.getElementById('btnSalvar').disabled = false;
+      chaveOculta = ""; codigoOculto = ""; document.getElementById('ean').focus();
+    }
+
+    // --- LÓGICA DE PENDÊNCIAS E FILTROS ---
+    function carregarPendencias() {
+      document.getElementById('tabelaPendencias').innerHTML = "";
+      document.getElementById('loadingMsg').style.display = "inline";
+      google.script.run.withSuccessHandler(renderizarTabela).buscarPendencias();
+    }
+
+    function renderizarTabela(dados) {
+      document.getElementById('loadingMsg').style.display = "none";
+      listaPendentes = dados; 
+      const tbody = document.getElementById('tabelaPendencias');
+      
+      if(dados.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Nenhuma nota pendente! 🎉</td></tr>";
+        return;
+      }
+
+      let html = "";
+      dados.forEach((item, index) => {
+        html += `<tr>
+                  <td style="font-size: 12px; color: #666; max-width: 150px; overflow: hidden; text-overflow: ellipsis;" title="${item.chave}">${item.chave}</td>
+                  <td><strong>${item.nota}</strong></td>
+                  <td>${item.codigo}</td>
+                  <td style="color:#d90429; font-weight:bold; font-size: 15px;">${item.saldo}</td>
+                  <td><button class="btn-logica" onclick="baixarSobraLogica(${index}, this)">✔ Sobra Lógica</button></td>
+                 </tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function filtrarTabela() {
+      let fChave = document.getElementById('filtroChave').value.toLowerCase();
+      let fNota = document.getElementById('filtroNota').value.toLowerCase();
+      let fMaterial = document.getElementById('filtroMaterial').value.toLowerCase();
+      
+      let trs = document.getElementById('tabelaPendencias').getElementsByTagName('tr');
+
+      for (let i = 0; i < trs.length; i++) {
+        let tds = trs[i].getElementsByTagName('td');
+        if (tds.length > 1) { // Ignora linha de mensagem vazia
+          let txtChave = tds[0].innerText.toLowerCase();
+          let txtNota = tds[1].innerText.toLowerCase();
+          let txtMaterial = tds[2].innerText.toLowerCase();
+
+          if (txtChave.includes(fChave) && txtNota.includes(fNota) && txtMaterial.includes(fMaterial)) {
+            trs[i].style.display = "";
+          } else {
+            trs[i].style.display = "none";
+          }
+        }
+      }
+    }
+
+    function baixarSobraLogica(index, btnEl) {
+      if(confirm("Tem certeza que deseja liquidar este saldo como SOBRA LÓGICA? A posição destino será B2PSOBRA.")) {
+        btnEl.innerText = "Salvando...";
+        btnEl.disabled = true;
+        btnEl.style.backgroundColor = "#9e9e9e";
+        
+        let item = listaPendentes[index];
+        google.script.run.withSuccessHandler(function(msg) {
+          alert(msg);
+          carregarPendencias(); 
+        }).salvarSobraLogica(item);
+      }
+    }
+  </script>
+</body>
+</html>
